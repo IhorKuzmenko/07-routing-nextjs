@@ -1,24 +1,26 @@
 "use client";
 
+import { useState, useMemo } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import {
   QueryClient,
   QueryClientProvider,
   useQuery,
   hydrate,
 } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
-import { useDebouncedCallback } from "use-debounce";
-import { fetchNotes, FetchNotesResponse } from "../../../../lib/api";
-import NoteList from "../../../../components/NoteList/NoteList";
-import { Pagination } from "../../../../components/Pagination/Pagination";
-import Modal from "../../../../components/Modal/Modal";
-import NoteForm from "../../../../components/NoteForm/NoteForm";
-import SearchBox from "../../../../components/SearchBox/SearchBox";
-import { useParams } from "next/navigation";
+import { fetchNotes, FetchNotesResponse } from "@/lib/api";
+import NoteList from "@/components/NoteList/NoteList";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import { Pagination } from "@/components/Pagination/Pagination";
 import css from "./Notes.module.css";
+
+import { useParams } from "next/navigation";
 
 interface NotesClientProps {
   dehydratedState?: unknown;
+  // tag?: string;  ← видаляємо, бо не використовуємо
 }
 
 export default function NotesClient({ dehydratedState }: NotesClientProps) {
@@ -39,13 +41,14 @@ export default function NotesClient({ dehydratedState }: NotesClientProps) {
 
 function NotesInner() {
   const params = useParams();
-
-  const tag = Array.isArray(params.tag) ? params.tag[0] : params.tag;
-  const finalTag = tag === "all" ? undefined : tag;
+  const slug = params.slug as string[] | undefined;
+  const tagFromUrl = slug?.[0];
+  const finalTag = tagFromUrl === "all" || !tagFromUrl ? undefined : tagFromUrl;
 
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const perPage = 12;
 
@@ -59,17 +62,18 @@ function NotesInner() {
     debounced(value);
   };
 
-  const { data, isLoading, isFetching, error } =
-    useQuery<FetchNotesResponse, Error>({
-      queryKey: ["notes", currentPage, debouncedSearch, finalTag],
-      queryFn: () =>
-        fetchNotes(currentPage, perPage, debouncedSearch, finalTag),
-      staleTime: 60_000,
-      placeholderData: (previousData) => previousData,
-    });
+  const { data, isLoading, isFetching, error } = useQuery<
+    FetchNotesResponse,
+    Error
+  >({
+    queryKey: ["notes", currentPage, debouncedSearch, finalTag],
+    queryFn: () =>
+      fetchNotes(currentPage, perPage, debouncedSearch, finalTag),
+    staleTime: 60_000,
+  });
 
-  const notes: FetchNotesResponse["notes"] = data?.notes ?? [];
-  const totalPages: number = data?.totalPages ?? 0;
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 0;
 
   return (
     <div className={css.app}>
@@ -89,9 +93,12 @@ function NotesInner() {
         </button>
       </header>
 
-      {isLoading && <p>Loading...</p>}
-      {isFetching && <p>Loading page...</p>}
+      {isLoading && <p>Завантаження...</p>}
+      {isFetching && <p>Оновлення сторінки...</p>}
       {notes.length > 0 && <NoteList notes={notes} />}
+      {notes.length === 0 && !isLoading && !error && (
+        <p>Нотаток за цим фільтром не знайдено</p>
+      )}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
@@ -99,7 +106,7 @@ function NotesInner() {
         </Modal>
       )}
 
-      {error && <p>Error loading notes</p>}
+      {error && <p>Помилка завантаження нотаток: {error.message}</p>}
     </div>
   );
 }

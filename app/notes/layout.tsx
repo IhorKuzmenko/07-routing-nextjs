@@ -1,5 +1,5 @@
-import SidebarNotes from "../notes/filter/@sidebar/page";
 import { ReactNode } from "react";
+import SidebarNotes from "../notes/filter/@sidebar/page";
 
 export default function NotesLayout({ children }: { children: ReactNode }) {
   return (

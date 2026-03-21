@@ -10,10 +10,9 @@ interface NoteModalPageProps {
 
 export default function NoteModalPage({ params }: NoteModalPageProps) {
   const router = useRouter();
+  const handleClose = () => router.back();
 
-  const handleClose = () => {
-    router.back(); 
-  };
+  if (!params?.id) return null;
 
   return (
     <Modal onClose={handleClose}>

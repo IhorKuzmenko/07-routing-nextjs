@@ -1,17 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import Modal from "../../../../components/Modal/Modal";
-import { fetchNoteById } from "@/lib/api";
+import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import Modal from "@/components/Modal/Modal";
+import { fetchNoteById } from "@/lib/api";
 import css from "./NotePreview.module.css";
-import type { Note } from "@/types/note"; 
+import type { Note } from "@/types/note";
 
-interface NotePreviewProps {
-  id: string;
-}
+export default function NoteModal({ params }: { params: { id: string } }) {
+  const { id } = params;
 
-export default function NotePreview({ id }: NotePreviewProps) {
   const router = useRouter();
 
   const { data, isLoading, error } = useQuery<Note, Error>({
@@ -19,12 +18,11 @@ export default function NotePreview({ id }: NotePreviewProps) {
     queryFn: () => fetchNoteById(id),
   });
 
-  const handleClose = () => {
-    router.back();
-  };
+  const handleClose = () => router.back();
 
-  if (isLoading) return <Modal onClose={handleClose}>Loading...</Modal>;
-  if (error || !data) return <Modal onClose={handleClose}>Error loading note.</Modal>;
+  if (!id) return null;
+  if (isLoading) return <Modal onClose={handleClose}>Завантаження...</Modal>;
+  if (error || !data) return <Modal onClose={handleClose}>Помилка завантаження</Modal>;
 
   return (
     <Modal onClose={handleClose}>
@@ -36,13 +34,8 @@ export default function NotePreview({ id }: NotePreviewProps) {
               {new Date(data.createdAt).toLocaleDateString()}
             </span>
           </div>
-
           <div className={css.content}>{data.content}</div>
-
-          <div>
-            <span className={css.tag}>{data.tag}</span>
-          </div>
-
+          <div><span className={css.tag}>{data.tag}</span></div>
           <button onClick={handleClose} className={css.backBtn}>
             Назад
           </button>
