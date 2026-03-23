@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation"; 
 import { useQuery } from "@tanstack/react-query";
 import Modal from "@/components/Modal/Modal";
 import { fetchNoteById } from "@/lib/api";
 import css from "./NotePreview.module.css";
 import type { Note } from "@/types/note";
 
-export default function NoteModal({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function NoteModal() {
+   const params = useParams();
+    const id = params.id as string;
 
   const router = useRouter();
 

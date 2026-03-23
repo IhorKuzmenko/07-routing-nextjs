@@ -1,22 +1,22 @@
 "use client";
 
-import NoteDetailsClient from "./NoteDetails.client";
+import { useRouter, useParams } from "next/navigation";
 import Modal from "../../../components/Modal/Modal";
-import { useRouter } from "next/navigation";
+import NoteDetailsClient from "./NoteDetails.client";
 
-interface NoteModalPageProps {
-  params: { id: string };
-}
-
-export default function NoteModalPage({ params }: NoteModalPageProps) {
+export default function NoteModalPage() {
   const router = useRouter();
+  const params = useParams();
+
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+
   const handleClose = () => router.back();
 
-  if (!params?.id) return null;
+  if (!id) return null;
 
   return (
     <Modal onClose={handleClose}>
-      <NoteDetailsClient noteId={params.id} />
+      <NoteDetailsClient noteId={id} />
     </Modal>
   );
 }
