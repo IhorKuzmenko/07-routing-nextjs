@@ -5,10 +5,11 @@ import { QueryClient, dehydrate } from "@tanstack/react-query";
 export default async function FilteredNotesPage({
   params,
 }: {
-  params: Promise<{ slug?: string[] }>;
+  params: Promise<{ slug: string[] }>;
 }) {
   const { slug } = await params;
-  const tagFromUrl = slug?.[0];
+
+  const tagFromUrl = slug[0];
   const finalTag = tagFromUrl === "all" ? undefined : tagFromUrl;
 
   const queryClient = new QueryClient();
@@ -18,5 +19,10 @@ export default async function FilteredNotesPage({
     queryFn: () => fetchNotes(1, 12, "", finalTag),
   });
 
-  return <NotesClient dehydratedState={dehydrate(queryClient)} />;
+  return (
+    <NotesClient
+      dehydratedState={dehydrate(queryClient)}
+      tag={finalTag}
+    />
+  );
 }

@@ -7,6 +7,7 @@ import {
   QueryClientProvider,
   useQuery,
   hydrate,
+  DehydratedState,
 } from "@tanstack/react-query";
 import { fetchNotes, FetchNotesResponse } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
@@ -16,35 +17,29 @@ import SearchBox from "@/components/SearchBox/SearchBox";
 import { Pagination } from "@/components/Pagination/Pagination";
 import css from "./Notes.module.css";
 
-import { useParams } from "next/navigation";
-
 interface NotesClientProps {
-  dehydratedState?: unknown;
-  // tag?: string;  ← видаляємо, бо не використовуємо
+  dehydratedState: DehydratedState;
+  tag: string | undefined;
 }
 
-export default function NotesClient({ dehydratedState }: NotesClientProps) {
+export default function NotesClient({
+  dehydratedState,
+  tag,
+}: NotesClientProps) {
   const [queryClient] = useState(() => new QueryClient());
 
   useMemo(() => {
-    if (dehydratedState) {
-      hydrate(queryClient, dehydratedState);
-    }
+    hydrate(queryClient, dehydratedState);
   }, [dehydratedState, queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <NotesInner />
+      <NotesInner tag={tag} />
     </QueryClientProvider>
   );
 }
 
-function NotesInner() {
-  const params = useParams();
-  const slug = params.slug as string[] | undefined;
-  const tagFromUrl = slug?.[0];
-  const finalTag = tagFromUrl === "all" || !tagFromUrl ? undefined : tagFromUrl;
-
+function NotesInner({ tag }: { tag: string | undefined }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -66,9 +61,9 @@ function NotesInner() {
     FetchNotesResponse,
     Error
   >({
-    queryKey: ["notes", currentPage, debouncedSearch, finalTag],
+    queryKey: ["notes", currentPage, debouncedSearch, tag],
     queryFn: () =>
-      fetchNotes(currentPage, perPage, debouncedSearch, finalTag),
+      fetchNotes(currentPage, perPage, debouncedSearch, tag),
     staleTime: 60_000,
   });
 
@@ -95,7 +90,9 @@ function NotesInner() {
 
       {isLoading && <p>Завантаження...</p>}
       {isFetching && <p>Оновлення сторінки...</p>}
+
       {notes.length > 0 && <NoteList notes={notes} />}
+
       {notes.length === 0 && !isLoading && !error && (
         <p>Нотаток за цим фільтром не знайдено</p>
       )}
