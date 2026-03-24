@@ -1,11 +1,15 @@
 import { ReactNode } from "react";
-import DefaultSidebar from "./@sidebar/default";
 
-export default function FilterLayout({ children }: { children: ReactNode }) {
+interface FilterLayoutProps {
+  children: ReactNode;
+  sidebar: ReactNode;
+}
+
+export default function FilterLayout({ children, sidebar }: FilterLayoutProps) {
   return (
     <div style={{ display: "flex", gap: "2rem" }}>
       <aside style={{ width: "220px", flexShrink: 0 }}>
-        <DefaultSidebar />
+        {sidebar}
       </aside>
       <main style={{ flex: 1 }}>{children}</main>
     </div>

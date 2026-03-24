@@ -1,57 +1,60 @@
 "use client";
 
-import { useQuery, QueryClient, QueryClientProvider, hydrate, DehydratedState } from "@tanstack/react-query";
+import { useQuery, HydrationBoundary, DehydratedState } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
 import css from "./NotePreview.module.css";
 import type { Note } from "@/types/note";
 import { useRouter } from "next/navigation";
+import Modal from "@/components/Modal/Modal";
 
 interface NotePreviewProps {
   noteId: string;
-  dehydratedState: DehydratedState;
+  dehydratedState?: DehydratedState;
 }
 
 export default function NotePreview({ noteId, dehydratedState }: NotePreviewProps) {
-  const queryClient = new QueryClient();
-
-  // Восстанавливаем серверное состояние
-  hydrate(queryClient, dehydratedState);
+  const router = useRouter();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <NoteInner noteId={noteId} />
-    </QueryClientProvider>
+    <HydrationBoundary state={dehydratedState}>
+      <ModalWrapper noteId={noteId} onClose={() => router.back()} />
+    </HydrationBoundary>
   );
 }
 
-function NoteInner({ noteId }: { noteId: string }) {
-  const router = useRouter();
+function ModalWrapper({ noteId, onClose }: { noteId: string; onClose: () => void }) {
   const { data, isLoading, error } = useQuery<Note, Error>({
     queryKey: ["note", noteId],
     queryFn: () => fetchNoteById(noteId),
-    refetchOnMount: false, // обязательно
+    enabled: !!noteId, 
+    refetchOnMount: false,
   });
 
-  const handleClose = () => router.back();
-
-  if (isLoading) return <p>Завантаження...</p>;
-  if (error || !data) return <p>Помилка завантаження</p>;
-
   return (
-    <div className={css.container}>
-      <div className={css.item}>
-        <div className={css.header}>
-          <h2>{data.title}</h2>
-          <span className={css.date}>
-            {new Date(data.createdAt).toLocaleDateString()}
-          </span>
+    <Modal onClose={onClose}>
+      {isLoading && <p>Loading...</p>}
+      {(error || !data) && <p>Upload error</p>}
+
+      {data && (
+        <div className={css.item}>
+          <div className={css.header}>
+            <h2>{data.title}</h2>
+            <span className={css.date}>
+              {new Date(data.createdAt).toLocaleDateString()}
+            </span>
+          </div>
+
+          <div className={css.content}>{data.content}</div>
+
+          <div>
+            <span className={css.tag}>{data.tag}</span>
+          </div>
+
+          <button onClick={onClose} className={css.backBtn}>
+            Назад
+          </button>
         </div>
-        <div className={css.content}>{data.content}</div>
-        <div><span className={css.tag}>{data.tag}</span></div>
-        <button onClick={handleClose} className={css.backBtn}>
-          Назад
-        </button>
-      </div>
-    </div>
+      )}
+    </Modal>
   );
 }
