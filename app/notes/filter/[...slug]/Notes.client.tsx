@@ -1,14 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
-import {
-  QueryClient,
-  QueryClientProvider,
-  useQuery,
-  hydrate,
-  DehydratedState,
-} from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fetchNotes, FetchNotesResponse } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
@@ -18,33 +12,15 @@ import { Pagination } from "@/components/Pagination/Pagination";
 import css from "./Notes.module.css";
 
 interface NotesClientProps {
-  dehydratedState: DehydratedState;
   tag: string | undefined;
 }
 
-export default function NotesClient({
-  dehydratedState,
-  tag,
-}: NotesClientProps) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  useMemo(() => {
-    hydrate(queryClient, dehydratedState);
-  }, [dehydratedState, queryClient]);
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <NotesInner tag={tag} />
-    </QueryClientProvider>
-  );
-}
-
-function NotesInner({ tag }: { tag: string | undefined }) {
+export default function NotesClient({ tag }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   const perPage = 12;
 
   const debounced = useDebouncedCallback((value: string) => {
@@ -83,7 +59,10 @@ function NotesInner({ tag }: { tag: string | undefined }) {
           />
         )}
 
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+        <button
+          className={css.button}
+          onClick={() => setIsModalOpen(true)}
+        >
           Create note +
         </button>
       </header>
