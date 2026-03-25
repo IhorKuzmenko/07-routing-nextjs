@@ -12,7 +12,7 @@ const tags = [
 
 export default function SidebarNotes() {
   return (
-    <nav>
+    <nav className={css.sidebar}>
       <ul className={css.menuList}>
         {tags.map((tag) => (
           <li key={tag.value} className={css.menuItem}>

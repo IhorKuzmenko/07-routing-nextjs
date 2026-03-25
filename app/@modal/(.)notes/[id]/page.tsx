@@ -7,7 +7,7 @@ interface PageProps {
 }
 
 export default async function Page({ params }: PageProps) {
-  const { id } = await params; // 
+  const { id } = await params; 
 
   if (!id) return <p>Note ID not found</p>;
 

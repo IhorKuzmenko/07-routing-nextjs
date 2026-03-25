@@ -88,13 +88,13 @@ function NotesInner({ tag }: { tag: string | undefined }) {
         </button>
       </header>
 
-      {isLoading && <p>Завантаження...</p>}
-      {isFetching && <p>Оновлення сторінки...</p>}
+      {isLoading && <p>Loading...</p>}
+      {isFetching && <p>Page update...</p>}
 
       {notes.length > 0 && <NoteList notes={notes} />}
 
       {notes.length === 0 && !isLoading && !error && (
-        <p>Нотаток за цим фільтром не знайдено</p>
+        <p>No notes found for this filter</p>
       )}
 
       {isModalOpen && (
@@ -103,7 +103,7 @@ function NotesInner({ tag }: { tag: string | undefined }) {
         </Modal>
       )}
 
-      {error && <p>Помилка завантаження нотаток: {error.message}</p>}
+      {error && <p>Error loading notes: {error.message}</p>}
     </div>
   );
 }

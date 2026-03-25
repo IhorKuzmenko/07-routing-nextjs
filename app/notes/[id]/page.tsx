@@ -1,4 +1,4 @@
-import { QueryClient, dehydrate } from "@tanstack/react-query";
+import { QueryClient, dehydrate, HydrationBoundary  } from "@tanstack/react-query";
 import { fetchNoteById } from "@/lib/api";
 import NotePreview from "../../@modal/(.)notes/[id]/NotePreview.client";
 
@@ -20,5 +20,9 @@ export default async function Page({ params }: PageProps) {
 
   const dehydratedState = dehydrate(queryClient);
 
-  return <NotePreview noteId={id} dehydratedState={dehydratedState} />;
+  return (
+    <HydrationBoundary  state={dehydratedState}>
+      <NotePreview noteId={id} />
+    </HydrationBoundary>
+  );
 }
