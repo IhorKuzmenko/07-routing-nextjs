@@ -15,7 +15,7 @@ export default async function FilteredNotesPage({
 
   const tagFromUrl = slug[0];
   const finalTag = tagFromUrl === "all" ? undefined : tagFromUrl;
-  const tag = [];
+
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
